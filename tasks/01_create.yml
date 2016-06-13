@@ -1,0 +1,80 @@
+---
+- name: Create temporary VPC and EC2 instance for creating the AMI
+  cloudformation:
+    aws_access_key: "{{ centos_ami_builder_aws_access_key | default('') }}"
+    aws_secret_key: "{{ centos_ami_builder_aws_secret_key | default('') }}"
+    stack_name: "{{ centos_ami_builder_stack_name }}"
+    state: "present"
+    region: "{{ centos_ami_builder_aws_region }}"
+    template: "{{ role_path }}/files/temp-vpc-with-temp-ec2.json"
+    template_parameters:
+      InstanceType: "{{ centos_ami_builder_ec2_type }}"
+      AwsRegion: "{{ centos_ami_builder_aws_region }}"
+      DiskDevice: "{{ centos_ami_builder_disk2dev }}"
+      DiskSizeGb: "{{ centos_ami_builder_disksize }}"
+      KeyName: "{{ centos_ami_builder_ec2_keypair }}"
+      SSHLocation: "{{ centos_ami_builder_allowip }}"
+    tags:
+      stack: temp-vpc
+  register: stack_data
+
+- name: Wait for the temporary EC2 instance to be ready
+  wait_for:
+    delay: 3
+    host: "{{ stack_data.stack_outputs.Ec2PublicIpAddr }}"
+    port: 22
+    search_regex: OpenSSH
+    timeout: 180
+
+- name: Add temporary EC2 instance to inventory
+  add_host:
+    ansible_connection: ssh
+    ansible_ssh_host: "{{ stack_data.stack_outputs.Ec2PublicIpAddr }}"
+    ansible_ssh_user: centos
+    hostname: ami_builder
+    name: ami_builder
+
+- name: Get ID of root EBS volumes
+  ec2_vol_facts:
+    aws_access_key: "{{ centos_ami_builder_aws_access_key | default('') }}"
+    aws_secret_key: "{{ centos_ami_builder_aws_secret_key | default('') }}"
+    region: "{{ centos_ami_builder_aws_region }}"
+    filters:
+      attachment.instance-id: "{{ stack_data.stack_outputs.Ec2InstanceId }}"
+      attachment.status: "attached"
+      attachment.device: "/dev/sda1"
+  register: fact_ebs_root
+
+- name: Get ID of secondary EBS volumes
+  ec2_vol_facts:
+    aws_access_key: "{{ centos_ami_builder_aws_access_key | default('') }}"
+    aws_secret_key: "{{ centos_ami_builder_aws_secret_key | default('') }}"
+    region: "{{ centos_ami_builder_aws_region }}"
+    filters:
+      attachment.instance-id: "{{ stack_data.stack_outputs.Ec2InstanceId }}"
+      attachment.status: "attached"
+      attachment.device: "/dev/xvdf"
+  register: fact_ebs_secondary
+
+- set_fact:
+    timestamp: "{{ lookup('pipe', 'date +%Y%m%d_%H%M%S') }}"
+    ebs_root_id: '{{ fact_ebs_root.volumes.0.id }}'
+    ebs_secondary_id: '{{ fact_ebs_secondary.volumes.0.id }}'
+    ec2_public_addr: '{{ stack_data.stack_outputs.Ec2PublicIpAddr }}'
+    ec2_instance_id: '{{ stack_data.stack_outputs.Ec2InstanceId }}'
+    vpc_id: '{{ stack_data.stack_outputs.VpcId }}'
+
+- name: Show EIP of EC2 instance created by cloudformation
+  debug: msg="The EIP of the temporary instance is {{ ec2_public_addr }}"
+
+- name: Show ID of EC2 instance created by cloudformation
+  debug: msg="The ID of the temporary instance is {{ ec2_instance_id }}"
+
+- name: Show ID of VPC created by cloudformation
+  debug: msg="The ID of the temporary VPC is {{ vpc_id }}"
+
+- name: Show information about root ebs volume
+  debug: msg="The ID of the root EBS volume is {{ ebs_root_id }}"
+
+- name: Show information about secondary ebs volume
+  debug: msg="The ID of the secondary EBS volume is {{ ebs_secondary_id }}"

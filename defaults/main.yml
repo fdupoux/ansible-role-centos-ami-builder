@@ -1,0 +1,26 @@
+---
+# Users may want to override the following parameters
+centos_ami_builder_aws_region: 'eu-west1'
+centos_ami_builder_aws_access_key: "{{ lookup('env','AWS_ACCESS_KEY') }}"
+centos_ami_builder_aws_secret_key: "{{ lookup('env','AWS_SECRET_KEY') }}"
+centos_ami_builder_ec2_keypair: ""
+centos_ami_builder_vgname: "vgmain"
+centos_ami_builder_disksize: '8'
+centos_ami_builder_rootsize: '4096M'
+centos_ami_builder_bootsize: '256M'
+centos_ami_builder_username: 'centos'
+
+# EC2 instance type of the temporary instance used to build the new AMI
+centos_ami_builder_ec2_type: "t2.nano"
+
+# Range of addresses which are authorised to connect to the temporary instance (eg: "${your_home_ip}/32")
+centos_ami_builder_allowip: '0.0.0.0/0'
+
+# Users should not have to override the following parameters
+centos_ami_builder_disk2dev: '/dev/xvdf'
+centos_ami_builder_disk2mnt: '/mnt/root'
+centos_ami_builder_stack_name: 'stack-ami-builder'
+
+# Needs to be updated when new CentOS versions are released
+centos_ami_builder_c7gpgkey: "http://mirror.centos.org/centos/RPM-GPG-KEY-CentOS-7"
+centos_ami_builder_releasepkg: "http://mirror.centos.org/centos/7/os/x86_64/Packages/centos-release-7-2.1511.el7.centos.2.10.x86_64.rpm"

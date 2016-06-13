@@ -45,7 +45,7 @@ cloud_final_modules:
 
 system_info:
   default_user:
-    name: admin
+    name: '{{ centos_ami_builder_username }}'
     lock_passwd: true
     gecos: Cloud User
     groups: [wheel, adm, systemd-journal]

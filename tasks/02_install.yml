@@ -1,0 +1,138 @@
+---
+- name: Dynamically get ID of the temporary EC2 instance
+  uri: return_content=yes url="http://169.254.169.254/latest/meta-data/instance-id"
+  register: instdata
+
+- name: Make sure these tasks run on the temporary EC2 instance
+  assert: that='"{{ instdata.content }}" == "{{ ec2_instance_id }}"'
+
+- name: Verify if selinux is enabled
+  shell: /sbin/getenforce
+  register: sestatus
+  changed_when: False
+
+- name: Disable selinux now if required
+  command: /sbin/setenforce 0
+  when: sestatus.stdout.find('Enforcing') == 0
+
+- name: Install system package
+  yum: name={{ item }} state=installed
+  with_items: ['parted', 'lvm2']
+
+- name: Create mount point for chroot environment
+  file: path={{ centos_ami_builder_disk2mnt }} state=directory owner=root group=root mode=0755
+
+- name: Check there is a second EBS Volume
+  shell: ls -lh {{ centos_ami_builder_disk2dev }}
+
+- name: Create new partition table on the second EBS Volume
+  shell: parted --script {{ centos_ami_builder_disk2dev }} mklabel msdos
+
+- name: Create boot partition on the new disk
+  shell: parted --script {{ centos_ami_builder_disk2dev }} mkpart primary ext3 1MB {{ centos_ami_builder_bootsize }}
+
+- name: Create lvm partition on the new disk
+  shell: parted --script {{ centos_ami_builder_disk2dev }} mkpart primary ext4 {{ centos_ami_builder_bootsize }} 100%
+
+- name: Set partition flags on boot
+  shell: parted --script {{ centos_ami_builder_disk2dev }} set 1 boot on
+
+- name: Set partition flags on lvm
+  shell: parted --script {{ centos_ami_builder_disk2dev }} set 2 lvm on
+
+- name: Create boot filesystem
+  shell: mkfs.ext3 -L boot {{ centos_ami_builder_disk2dev }}1
+
+- name: Create LVM Physical-Volume
+  shell: pvcreate -ff --yes {{ centos_ami_builder_disk2dev }}2
+
+- name: Create LVM Volume-Group
+  shell: vgcreate {{ centos_ami_builder_vgname }} {{ centos_ami_builder_disk2dev }}2
+
+- name: Create LVM Logical-Volume
+  shell: lvcreate --wipesignatures=y --zero=y --name=root --size={{ centos_ami_builder_rootsize }} {{ centos_ami_builder_vgname }}
+
+- name: Create root filesystem
+  shell: mkfs.ext4 -L root /dev/{{ centos_ami_builder_vgname }}/root
+
+- name: Mount new root filesystem
+  shell: mount /dev/disk/by-label/root {{ centos_ami_builder_disk2mnt }}
+
+- name: Create important top-level directories
+  shell: mkdir -p {{ centos_ami_builder_disk2mnt }}/{boot,dev,proc,sys,etc}
+
+- name: Mount boot filesystem
+  shell: mount /dev/disk/by-label/boot {{ centos_ami_builder_disk2mnt }}/boot
+
+- name: Create important directories
+  shell: mkdir -p {{ centos_ami_builder_disk2mnt }}{{ item }}
+  with_items:
+    - /var/lib/rpm
+    - /etc/sysconfig
+
+- name: Create /etc/resolv.conf for chrooted programs
+  shell: cp -a /etc/resolv.conf {{ centos_ami_builder_disk2mnt }}/etc/resolv.conf
+
+- name: Initiate RPM database in chroot environment
+  shell: rpm --rebuilddb --root={{ centos_ami_builder_disk2mnt }}
+
+- name: Import GPG keys for CentOS yum repository
+  shell: rpm --import --root={{ centos_ami_builder_disk2mnt }} {{ centos_ami_builder_c7gpgkey }}
+
+- name: Install CentOS release package (centos-release-xxx.rpm)
+  shell: rpm -i --root={{ centos_ami_builder_disk2mnt }} --nodeps {{ centos_ami_builder_releasepkg }}
+
+- name: Prepare chroot environment mounts
+  shell: mount --bind /{{ item }} {{ centos_ami_builder_disk2mnt }}/{{ item }}
+  with_items: ['proc', 'dev', 'sys']
+
+- name: Install base of the system in chroot environment
+  shell: yum --releasever=7 --installroot={{ centos_ami_builder_disk2mnt }} install -y rpm-build yum
+
+- name: Install base package groups in chroot environment
+  shell: chroot {{ centos_ami_builder_disk2mnt }} /bin/yum -y groupinstall base core
+
+- name: Copy the EPEL repository definition
+  copy: src=epel.repo dest={{ centos_ami_builder_disk2mnt }}/etc/yum.repos.d/epel.repo
+
+- name: Create the GPG key for EPEL
+  copy: src=RPM-GPG-KEY-EPEL-7 dest={{ centos_ami_builder_disk2mnt }}/etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7
+
+- name: Install cloud-init and cloud-utils-growpart
+  shell: chroot {{ centos_ami_builder_disk2mnt }} /bin/yum -y install cloud-init cloud-utils-growpart
+
+- name: Install aws tools which may be required to initialize instances
+  shell: chroot {{ centos_ami_builder_disk2mnt }} /bin/yum -y install awscli python2-boto rubygem-aws-sdk-resources
+
+- name: Create important configuration files
+  template: src={{ item }}.j2 dest={{ centos_ami_builder_disk2mnt }}/{{ item }}
+  with_items:
+    - etc/sysconfig/network-scripts/ifcfg-eth0
+    - etc/sysconfig/network
+    - etc/ssh/sshd_config
+    - etc/cloud/cloud.cfg
+    - etc/selinux/config
+    - etc/default/grub
+    - etc/fstab
+
+- name: Install kernel and grub packages
+  shell: chroot {{ centos_ami_builder_disk2mnt }} /bin/yum -y install kernel kernel-devel grub2 grubby grub2-tools
+
+- name: Generate grub2 configuration file
+  shell: chroot {{ centos_ami_builder_disk2mnt }} /sbin/grub2-mkconfig -o /boot/grub2/grub.cfg
+
+- name: Execute grub2 installer
+  shell: chroot {{ centos_ami_builder_disk2mnt }} /sbin/grub2-install {{ centos_ami_builder_disk2dev }}
+
+- name: Clean installation packages
+  shell: chroot {{ centos_ami_builder_disk2mnt }} /bin/yum clean all
+
+- name: Unmount chroot environment mounts
+  shell: umount {{ centos_ami_builder_disk2mnt }}/{{ item }}
+  with_items: ['proc', 'dev', 'sys', 'boot']
+
+- name: Unmount chroot environment root
+  shell: umount {{ centos_ami_builder_disk2mnt }}
+
+- name: Stop accessing LVM Logical-Volumes
+  shell: vgchange -an {{ centos_ami_builder_vgname }}
