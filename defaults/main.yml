@@ -1,6 +1,6 @@
 ---
 # Users may want to override the following parameters
-centos_ami_builder_aws_region: 'eu-west1'
+centos_ami_builder_aws_region: 'eu-west-1'
 centos_ami_builder_aws_access_key: "{{ lookup('env','AWS_ACCESS_KEY') }}"
 centos_ami_builder_aws_secret_key: "{{ lookup('env','AWS_SECRET_KEY') }}"
 centos_ami_builder_ec2_keypair: ""
