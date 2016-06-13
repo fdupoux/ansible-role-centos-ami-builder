@@ -1,0 +1,16 @@
+---
+- name: Example to show how to create a custom CentOS-7.x AMI
+  hosts: localhost
+
+  roles:
+    - role: centos-ami-builder
+      centos_ami_builder_aws_region: "eu-west-1"
+      centos_ami_builder_aws_access_key: "{{ lookup('env','AWS_ACCESS_KEY') }}"
+      centos_ami_builder_aws_secret_key: "{{ lookup('env','AWS_SECRET_KEY') }}"
+      centos_ami_builder_ec2_keypair: "francois@home"
+      centos_ami_builder_username: 'centos'
+      centos_ami_builder_vgname: "vgmain"
+      centos_ami_builder_disksize: '8'
+      centos_ami_builder_bootsize: '256M'
+      centos_ami_builder_rootsize: '4096M'
+      centos_ami_builder_allowip: '0.0.0.0/0'
