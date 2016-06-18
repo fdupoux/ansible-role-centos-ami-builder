@@ -6,6 +6,7 @@ centos_ami_builder_aws_secret_key: "{{ lookup('env','AWS_SECRET_KEY') }}"
 centos_ami_builder_ec2_keypair: ""
 centos_ami_builder_vgname: "vgmain"
 centos_ami_builder_disksize: '8'
+centos_ami_builder_disktype: 'gp2'
 centos_ami_builder_rootsize: '4096M'
 centos_ami_builder_bootsize: '256M'
 centos_ami_builder_username: 'centos'

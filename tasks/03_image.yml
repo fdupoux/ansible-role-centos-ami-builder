@@ -38,6 +38,11 @@
     instance_id: "{{ ec2_instance_id }}"
     name: "ami_centos7_custom_{{ timestamp }}"
     wait: yes
+    device_mapping:
+      - device_name: "/dev/sda1"
+        size: "{{ centos_ami_builder_disksize }}"
+        volume_type: "{{ centos_ami_builder_disktype }}"
+        delete_on_termination: true
     tags:
       Name: "ami_centos7_custom_{{ timestamp }}"
       description: "Custom AMI of CentOS created at {{ timestamp }}"
