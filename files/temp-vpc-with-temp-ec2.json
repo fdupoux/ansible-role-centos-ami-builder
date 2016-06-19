@@ -5,6 +5,11 @@
 
   "Parameters" : {
 
+    "StackName": {
+      "Description" : "Name of the stack",
+      "Type" : "String"
+    },
+
     "InstanceType" : {
       "Description" : "Temporary EC2 instance type",
       "Type" : "String",
@@ -65,7 +70,7 @@
       "Type" : "AWS::EC2::VPC",
       "Properties" : {
         "CidrBlock" : "10.89.0.0/16",
-        "Tags" : [ {"Key" : "Application", "Value" : { "Ref" : "AWS::StackId"} } ]
+        "Tags" : [ {"Key" : "Name", "Value" : { "Ref" : "StackName"} } ]
       }
     },
 

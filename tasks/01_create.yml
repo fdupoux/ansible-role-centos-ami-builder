@@ -8,14 +8,13 @@
     region: "{{ centos_ami_builder_aws_region }}"
     template: "{{ role_path }}/files/temp-vpc-with-temp-ec2.json"
     template_parameters:
+      StackName: "{{ centos_ami_builder_stack_name }}"
       InstanceType: "{{ centos_ami_builder_ec2_type }}"
       AwsRegion: "{{ centos_ami_builder_aws_region }}"
       DiskDevice: "{{ centos_ami_builder_disk2dev }}"
       DiskSizeGb: "{{ centos_ami_builder_disksize }}"
       KeyName: "{{ centos_ami_builder_ec2_keypair }}"
       SSHLocation: "{{ centos_ami_builder_allowip }}"
-    tags:
-      stack: temp-vpc
   register: stack_data
 
 - name: Wait for the temporary EC2 instance to be ready
