@@ -21,6 +21,7 @@ centos_ami_builder_allowip: '0.0.0.0/0'
 centos_ami_builder_disk2dev: '/dev/xvdf'
 centos_ami_builder_disk2mnt: '/mnt/root'
 centos_ami_builder_stack_name: 'stack-ami-builder'
+centos_ami_builder_stack_cidrbase: '10.89'
 
 # Needs to be updated when new CentOS versions are released
 centos_ami_builder_c7gpgkey: "http://mirror.centos.org/centos/RPM-GPG-KEY-CentOS-7"

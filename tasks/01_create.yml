@@ -15,6 +15,7 @@
       DiskSizeGb: "{{ centos_ami_builder_disksize }}"
       KeyName: "{{ centos_ami_builder_ec2_keypair }}"
       SSHLocation: "{{ centos_ami_builder_allowip }}"
+      CidrBase: "{{ centos_ami_builder_stack_cidrbase }}"
   register: stack_data
 
 - name: Wait for the temporary EC2 instance to be ready
