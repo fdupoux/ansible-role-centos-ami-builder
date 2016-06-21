@@ -58,23 +58,23 @@
 
 - set_fact:
     timestamp: "{{ lookup('pipe', 'date +%Y%m%d_%H%M%S') }}"
-    ebs_root_id: '{{ fact_ebs_root.volumes.0.id }}'
-    ebs_secondary_id: '{{ fact_ebs_secondary.volumes.0.id }}'
-    ec2_public_addr: '{{ stack_data.stack_outputs.Ec2PublicIpAddr }}'
-    ec2_instance_id: '{{ stack_data.stack_outputs.Ec2InstanceId }}'
-    vpc_id: '{{ stack_data.stack_outputs.VpcId }}'
+    centos_ami_builder_ebs_root_id: '{{ fact_ebs_root.volumes.0.id }}'
+    centos_ami_builder_ebs_secondary_id: '{{ fact_ebs_secondary.volumes.0.id }}'
+    centos_ami_builder_ec2_public_addr: '{{ stack_data.stack_outputs.Ec2PublicIpAddr }}'
+    centos_ami_builder_ec2_instance_id: '{{ stack_data.stack_outputs.Ec2InstanceId }}'
+    centos_ami_builder_vpc_id: '{{ stack_data.stack_outputs.VpcId }}'
 
 - name: Show EIP of EC2 instance created by cloudformation
-  debug: msg="The EIP of the temporary instance is {{ ec2_public_addr }}"
+  debug: msg="The EIP of the temporary instance is {{ centos_ami_builder_ec2_public_addr }}"
 
 - name: Show ID of EC2 instance created by cloudformation
-  debug: msg="The ID of the temporary instance is {{ ec2_instance_id }}"
+  debug: msg="The ID of the temporary instance is {{ centos_ami_builder_ec2_instance_id }}"
 
 - name: Show ID of VPC created by cloudformation
-  debug: msg="The ID of the temporary VPC is {{ vpc_id }}"
+  debug: msg="The ID of the temporary VPC is {{ centos_ami_builder_vpc_id }}"
 
 - name: Show information about root ebs volume
-  debug: msg="The ID of the root EBS volume is {{ ebs_root_id }}"
+  debug: msg="The ID of the root EBS volume is {{ centos_ami_builder_ebs_root_id }}"
 
 - name: Show information about secondary ebs volume
-  debug: msg="The ID of the secondary EBS volume is {{ ebs_secondary_id }}"
+  debug: msg="The ID of the secondary EBS volume is {{ centos_ami_builder_ebs_secondary_id }}"

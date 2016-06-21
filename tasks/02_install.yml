@@ -4,7 +4,7 @@
   register: instdata
 
 - name: Make sure these tasks run on the temporary EC2 instance
-  assert: that='"{{ instdata.content }}" == "{{ ec2_instance_id }}"'
+  assert: that='"{{ instdata.content }}" == "{{ centos_ami_builder_ec2_instance_id }}"'
 
 - name: Verify if selinux is enabled
   shell: /sbin/getenforce

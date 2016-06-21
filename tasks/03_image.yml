@@ -4,7 +4,7 @@
     aws_access_key: "{{ centos_ami_builder_aws_access_key | default('') }}"
     aws_secret_key: "{{ centos_ami_builder_aws_secret_key | default('') }}"
     region: "{{ centos_ami_builder_aws_region }}"
-    instance_id: "{{ ec2_instance_id }}"
+    instance_id: "{{ centos_ami_builder_ec2_instance_id }}"
     state: stopped
     wait: True
 
@@ -16,17 +16,17 @@
     id: "{{ item }}"
     instance: ""
   with_items:
-    - "{{ ebs_root_id }}"
-    - "{{ ebs_secondary_id }}"
+    - "{{ centos_ami_builder_ebs_root_id }}"
+    - "{{ centos_ami_builder_ebs_secondary_id }}"
 
 - name: Reattach secondary volume as the root volume of the instance
   ec2_vol:
       aws_access_key: "{{ centos_ami_builder_aws_access_key | default('') }}"
       aws_secret_key: "{{ centos_ami_builder_aws_secret_key | default('') }}"
       region: "{{ centos_ami_builder_aws_region }}"
-      id: "{{ ebs_secondary_id }}"
+      id: "{{ centos_ami_builder_ebs_secondary_id }}"
       state: "present"
-      instance: "{{ ec2_instance_id }}"
+      instance: "{{ centos_ami_builder_ec2_instance_id }}"
       device_name: "/dev/sda1"
       delete_on_termination: yes
 
@@ -35,7 +35,7 @@
     aws_access_key: "{{ centos_ami_builder_aws_access_key | default('') }}"
     aws_secret_key: "{{ centos_ami_builder_aws_secret_key | default('') }}"
     region: "{{ centos_ami_builder_aws_region }}"
-    instance_id: "{{ ec2_instance_id }}"
+    instance_id: "{{ centos_ami_builder_ec2_instance_id }}"
     name: "ami_centos7_custom_{{ timestamp }}"
     wait: yes
     device_mapping:
@@ -53,7 +53,7 @@
     aws_access_key: "{{ centos_ami_builder_aws_access_key | default('') }}"
     aws_secret_key: "{{ centos_ami_builder_aws_secret_key | default('') }}"
     region: "{{ centos_ami_builder_aws_region }}"
-    id: "{{ ebs_secondary_id }}"
+    id: "{{ centos_ami_builder_ebs_secondary_id }}"
     instance: ""
 
 - name: Reattach original volume to allow proper destruction of the stack
@@ -61,9 +61,9 @@
       aws_access_key: "{{ centos_ami_builder_aws_access_key | default('') }}"
       aws_secret_key: "{{ centos_ami_builder_aws_secret_key | default('') }}"
       region: "{{ centos_ami_builder_aws_region }}"
-      id: "{{ ebs_root_id }}"
+      id: "{{ centos_ami_builder_ebs_root_id }}"
       state: "present"
-      instance: "{{ ec2_instance_id }}"
+      instance: "{{ centos_ami_builder_ec2_instance_id }}"
       device_name: "/dev/sda1"
       delete_on_termination: yes
 
@@ -72,7 +72,7 @@
     aws_access_key: "{{ centos_ami_builder_aws_access_key | default('') }}"
     aws_secret_key: "{{ centos_ami_builder_aws_secret_key | default('') }}"
     region: "{{ centos_ami_builder_aws_region }}"
-    id: "{{ ebs_secondary_id }}"
+    id: "{{ centos_ami_builder_ebs_secondary_id }}"
     state: "absent"
 
 - name: Show resulting AMI
