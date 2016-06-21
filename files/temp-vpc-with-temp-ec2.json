@@ -50,6 +50,7 @@
 
     "CidrBase": {
       "Description" : "First two numbers in the IP range allocated to this stack (eg: '10.89')",
+      "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})",
       "Type" : "String"
     }
 
