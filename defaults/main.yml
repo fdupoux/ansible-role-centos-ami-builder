@@ -14,6 +14,14 @@ centos_ami_builder_username: 'centos'
 # EC2 instance type of the temporary instance used to build the new AMI
 centos_ami_builder_ec2_type: "t2.nano"
 
+# Which name and tags to set on the new AMI
+centos_ami_builder_ami_name: "ami_centos7_custom"
+centos_ami_builder_ami_tags:
+  description: 'Custom CentOS-7 image'
+  ami_type: 'minimal'
+  os_name: 'centos'
+  os_majver: '7'
+
 # Range of addresses which are authorised to connect to the temporary instance (eg: "${your_home_ip}/32")
 centos_ami_builder_allowip: '0.0.0.0/0'
 

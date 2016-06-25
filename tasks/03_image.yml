@@ -36,16 +36,14 @@
     aws_secret_key: "{{ centos_ami_builder_aws_secret_key | default('') }}"
     region: "{{ centos_ami_builder_aws_region }}"
     instance_id: "{{ centos_ami_builder_ec2_instance_id }}"
-    name: "ami_centos7_custom_{{ timestamp }}"
+    name: "{{ centos_ami_builder_ami_name }}_{{ timestamp }}"
+    tags: "{{ centos_ami_builder_ami_tags }}"
     wait: yes
     device_mapping:
       - device_name: "/dev/sda1"
         size: "{{ centos_ami_builder_disksize }}"
         volume_type: "{{ centos_ami_builder_disktype }}"
         delete_on_termination: true
-    tags:
-      Name: "ami_centos7_custom_{{ timestamp }}"
-      description: "Custom AMI of CentOS created at {{ timestamp }}"
   register: myami
 
 - name: Detach root volumes from the temporary instance
