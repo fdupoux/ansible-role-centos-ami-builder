@@ -30,14 +30,28 @@
       device_name: "/dev/sda1"
       delete_on_termination: yes
 
+- name: Determine timestamp
+  set_fact:
+    timestamp: "{{ lookup('pipe', 'date +%Y%m%d_%H%M%S') }}"
+
+- name: Determine full name of the new AMI
+  set_fact:
+    centos_ami_builder_ami_fullname: "{{ centos_ami_builder_ami_name }}_{{ timestamp }}"
+
+- name: Determine default tags of the new AMI
+  set_fact:
+    centos_ami_builder_ami_deftags:
+      Name: "{{ centos_ami_builder_ami_fullname }}"
+      ctime: "{{ timestamp }}"
+
 - name: Create AMI from the temporary instance using the secondary volume
   ec2_ami:
     aws_access_key: "{{ centos_ami_builder_aws_access_key | default('') }}"
     aws_secret_key: "{{ centos_ami_builder_aws_secret_key | default('') }}"
     region: "{{ centos_ami_builder_aws_region }}"
     instance_id: "{{ centos_ami_builder_ec2_instance_id }}"
-    name: "{{ centos_ami_builder_ami_name }}_{{ timestamp }}"
-    tags: "{{ centos_ami_builder_ami_tags }}"
+    name: "{{ centos_ami_builder_ami_fullname }}"
+    tags: "{{ centos_ami_builder_ami_deftags | combine(centos_ami_builder_ami_tags) }}"
     wait: yes
     device_mapping:
       - device_name: "/dev/sda1"

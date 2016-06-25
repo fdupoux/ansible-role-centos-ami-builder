@@ -57,7 +57,6 @@
   register: fact_ebs_secondary
 
 - set_fact:
-    timestamp: "{{ lookup('pipe', 'date +%Y%m%d_%H%M%S') }}"
     centos_ami_builder_ebs_root_id: '{{ fact_ebs_root.volumes.0.id }}'
     centos_ami_builder_ebs_secondary_id: '{{ fact_ebs_secondary.volumes.0.id }}'
     centos_ami_builder_ec2_public_addr: '{{ stack_data.stack_outputs.Ec2PublicIpAddr }}'
