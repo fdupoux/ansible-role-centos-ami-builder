@@ -159,7 +159,8 @@
         "InstanceType" : { "Ref" : "InstanceType" },
         "KeyName" : { "Ref" : "KeyName" },
         "SubnetId" : { "Ref" : "Subnet" },
-        "SecurityGroupIds": [{ "Ref" : "InstanceSecurityGroup" }]
+        "SecurityGroupIds": [{ "Ref" : "InstanceSecurityGroup" }],
+        "Tags" : [ {"Key" : "Name", "Value" : "centos-ami-builder"} ]
       }
     },
 
