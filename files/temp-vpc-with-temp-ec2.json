@@ -30,8 +30,8 @@
 
     "DiskSizeGb": {
       "Description" : "Total size in GB of the disk used as a template to create the new AMI",
-      "Type" : "String"
-      },
+      "Type" : "Number"
+    },
 
     "DiskDevice": {
       "Description" : "Device name for the second volume which is the template for the AMI",
