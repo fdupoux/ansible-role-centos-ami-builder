@@ -89,3 +89,9 @@
 
 - name: Show resulting AMI
   debug: msg="AMI has been created with ID {{ myami.image_id }}"
+
+- name: Save ID of the new AMI to a local file so it can be used as an artifact
+  local_action: copy
+  args:
+    content: "{{ myami.image_id }}"
+    dest: "{{ role_path }}/target/ami_id.txt"
