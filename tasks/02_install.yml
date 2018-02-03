@@ -57,37 +57,55 @@
 
 - name: Mount new root filesystem
   shell: mount /dev/disk/by-label/root {{ centos_ami_builder_disk2mnt }}
+  args:
+    warn: false
 
 - name: Create important top-level directories
   shell: mkdir -p {{ centos_ami_builder_disk2mnt }}/{boot,dev,proc,sys,etc}
+  args:
+    warn: false
 
 - name: Mount boot filesystem
   shell: mount /dev/disk/by-label/boot {{ centos_ami_builder_disk2mnt }}/boot
+  args:
+    warn: false
 
 - name: Create important directories
   shell: mkdir -p {{ centos_ami_builder_disk2mnt }}{{ item }}
   with_items:
     - /var/lib/rpm
     - /etc/sysconfig
+  args:
+    warn: false
 
 - name: Create /etc/resolv.conf for chrooted programs
   shell: cp -a /etc/resolv.conf {{ centos_ami_builder_disk2mnt }}/etc/resolv.conf
 
 - name: Initiate RPM database in chroot environment
   shell: rpm --rebuilddb --root={{ centos_ami_builder_disk2mnt }}
+  args:
+    warn: false
 
 - name: Import GPG keys for CentOS yum repository
   shell: rpm --import --root={{ centos_ami_builder_disk2mnt }} {{ centos_ami_builder_c7gpgkey }}
+  args:
+    warn: false
 
 - name: Install CentOS release package (centos-release-xxx.rpm)
   shell: rpm -i --root={{ centos_ami_builder_disk2mnt }} --nodeps {{ centos_ami_builder_releasepkg }}
+  args:
+    warn: false
 
 - name: Prepare chroot environment mounts
   shell: mount --bind /{{ item }} {{ centos_ami_builder_disk2mnt }}/{{ item }}
   with_items: ['proc', 'dev', 'sys']
+  args:
+    warn: false
 
 - name: Install base of the system in chroot environment
   shell: yum --releasever=7 --installroot={{ centos_ami_builder_disk2mnt }} install -y rpm-build yum
+  args:
+    warn: false
 
 - name: Install base package groups in chroot environment
   shell: chroot {{ centos_ami_builder_disk2mnt }} /bin/yum -y groupinstall base core
