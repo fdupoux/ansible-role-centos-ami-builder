@@ -1,11 +1,11 @@
 ---
-- include: 01_create.yml
+- import_tasks: 01_create.yml
   tags: ['centos-ami-builder','centos-ami-builder-create']
-- include: 02_install.yml
+- import_tasks: 02_install.yml
   delegate_to: ami_builder
   become: true
   tags: ['centos-ami-builder','centos-ami-builder-install']
-- include: 03_image.yml
+- import_tasks: 03_image.yml
   tags: ['centos-ami-builder','centos-ami-builder-image']
-- include: 04_cleanup.yml
+- import_tasks: 04_cleanup.yml
   tags: ['centos-ami-builder','centos-ami-builder-cleanup']
