@@ -10,6 +10,10 @@ repositories. This allows to have a custom disk layout with LVM (Logical Volume
 Manager) and to control all packages which are going to be installed in order to
 get a really minimal system.
 
+This role only works with CentOS v7 and it has been tested with CentOS v7.9.
+Please use the following role to build a Rocky Linux v8 AMI:
+https://github.com/fdupoux/ansible-role-rockylinux-ami-builder
+
 ## Contents
 The disk layout is based on LVM as it is very useful for allocating the disk
 space and it can be quite important on stateful instances such as database
